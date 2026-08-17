@@ -3,11 +3,10 @@
 
 //services
 
-import { hash } from 'bcryptjs'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import z from 'zod'
-import { prisma } from '@/lib/prisma'
-import { registerService } from '@/services/register'
+import { PrismaUsersRepository } from '@/repositories/prisma-users.repository'
+import { RegisterService } from '@/services/register'
 
 export async function register(
   request: FastifyRequest,
@@ -24,7 +23,10 @@ export async function register(
   )
 
   try {
-    await registerService({
+    const prismaUsersRepository = new PrismaUsersRepository()
+    const registerService = new RegisterService(prismaUsersRepository)
+
+    await registerService.handle({
       name,
       email,
       password,

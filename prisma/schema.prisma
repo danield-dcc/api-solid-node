@@ -5,7 +5,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  output   = "../prisma/generated/prisma"
 }
 
 datasource db {
@@ -13,11 +13,13 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(uuid())
+  id            String @id @default(uuid())
   name          String
   email         String   @unique
   password_hash String
   created_at    DateTime @default(now())
+  
+  checkIns CheckIn[]
 
   @@map("users")
 }
@@ -26,6 +28,12 @@ model CheckIn {
   id           String   @id @default(uuid())
   created_at   DateTime @default(now())
   validated_at DateTime?
+
+  user    User @relation(fields: [user_id], references: [id])
+  user_id String
+
+  gym Gym @relation(fields: [gym_id], references: [id])
+  gym_id String
 
   @@map("check_ins")
 }
@@ -38,5 +46,6 @@ model Gym {
   latitude    Decimal
   longitude   Decimal
 
+  checkIns CheckIn[]
   @@map("gyms")
 }

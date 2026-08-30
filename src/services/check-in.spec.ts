@@ -10,6 +10,8 @@ import {
 import { InMemoryCheckInsRepository } from '@/repositories/in-memory/in-memory-check-ins-repository'
 import { InMemoryGymsRepository } from '@/repositories/in-memory/in-memory-gyms-repository'
 import { CheckInService } from './check-in'
+import { MaxDistanceError } from './errors/max-distance-error'
+import { MaxNumberOfCheckInsError } from './errors/max-number-of-check-ins-error'
 
 let checkInsRepository: InMemoryCheckInsRepository
 let gymsRepository: InMemoryGymsRepository
@@ -21,7 +23,7 @@ const userCoordinates = {
 }
 
 describe('Check-in Service', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     checkInsRepository = new InMemoryCheckInsRepository()
     gymsRepository = new InMemoryGymsRepository()
     checkInsService = new CheckInService(
@@ -29,12 +31,12 @@ describe('Check-in Service', () => {
       gymsRepository,
     )
 
-    gymsRepository.items.push({
+    await gymsRepository.create({
       id: 'gym-01',
       title: 'JavaScript Gym',
       description: '',
-      latitude: new Decimal(userCoordinates.latitude),
-      longitude: new Decimal(userCoordinates.longitude),
+      latitude: userCoordinates.latitude,
+      longitude: userCoordinates.longitude,
       phone: '',
     })
 
@@ -73,7 +75,7 @@ describe('Check-in Service', () => {
         userLatitude: userCoordinates.latitude,
         userLongitude: userCoordinates.longitude,
       }),
-    ).rejects.toBeInstanceOf(Error)
+    ).rejects.toBeInstanceOf(MaxNumberOfCheckInsError)
   })
 
   it('should be able to check in twice but in different days', async () => {
@@ -115,6 +117,6 @@ describe('Check-in Service', () => {
         userLatitude: userCoordinates.latitude,
         userLongitude: userCoordinates.longitude,
       }),
-    ).rejects.toBeInstanceOf(Error)
+    ).rejects.toBeInstanceOf(MaxDistanceError)
   })
 })

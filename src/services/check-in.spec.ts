@@ -15,6 +15,11 @@ let checkInsRepository: InMemoryCheckInsRepository
 let gymsRepository: InMemoryGymsRepository
 let checkInsService: CheckInService
 
+const userCoordinates = {
+  latitude: -31.7462933,
+  longitude: -52.3687164,
+}
+
 describe('Check-in Service', () => {
   beforeEach(() => {
     checkInsRepository = new InMemoryCheckInsRepository()
@@ -28,8 +33,8 @@ describe('Check-in Service', () => {
       id: 'gym-01',
       title: 'JavaScript Gym',
       description: '',
-      latitude: new Decimal(0),
-      longitude: new Decimal(0),
+      latitude: new Decimal(userCoordinates.latitude),
+      longitude: new Decimal(userCoordinates.longitude),
       phone: '',
     })
 
@@ -44,8 +49,8 @@ describe('Check-in Service', () => {
     const { checkIn } = await checkInsService.handle({
       gymId: 'gym-01',
       userId: 'gym-01',
-      userLatitude: -31.7462933,
-      userLongitude: -52.3687164,
+      userLatitude: userCoordinates.latitude,
+      userLongitude: userCoordinates.longitude,
     })
 
     expect(checkIn.id).toEqual(expect.any(String))
@@ -57,16 +62,16 @@ describe('Check-in Service', () => {
     await checkInsService.handle({
       gymId: 'gym-01',
       userId: 'gym-01',
-      userLatitude: -31.7462933,
-      userLongitude: -52.3687164,
+      userLatitude: userCoordinates.latitude,
+      userLongitude: userCoordinates.longitude,
     })
 
     await expect(() =>
       checkInsService.handle({
         gymId: 'gym-01',
         userId: 'gym-01',
-        userLatitude: -31.7462933,
-        userLongitude: -52.3687164,
+        userLatitude: userCoordinates.latitude,
+        userLongitude: userCoordinates.longitude,
       }),
     ).rejects.toBeInstanceOf(Error)
   })
@@ -77,8 +82,8 @@ describe('Check-in Service', () => {
     await checkInsService.handle({
       gymId: 'gym-01',
       userId: 'gym-01',
-      userLatitude: -31.7462933,
-      userLongitude: -52.3687164,
+      userLatitude: userCoordinates.latitude,
+      userLongitude: userCoordinates.longitude,
     })
 
     vi.setSystemTime(new Date(2026, 7, 30, 8, 0, 0))
@@ -86,10 +91,30 @@ describe('Check-in Service', () => {
     const { checkIn } = await checkInsService.handle({
       gymId: 'gym-01',
       userId: 'gym-01',
-      userLatitude: -31.7462933,
-      userLongitude: -52.3687164,
+      userLatitude: userCoordinates.latitude,
+      userLongitude: userCoordinates.longitude,
     })
 
     expect(checkIn.id).toEqual(expect.any(String))
+  })
+
+  it('should not be able to check in on distant gym', async () => {
+    gymsRepository.items.push({
+      id: 'gym-02',
+      title: 'JavaScript Gym',
+      description: '',
+      latitude: new Decimal(-31.7659672),
+      longitude: new Decimal(-52.347237),
+      phone: '',
+    })
+
+    await expect(() =>
+      checkInsService.handle({
+        gymId: 'gym-02',
+        userId: 'gym-01',
+        userLatitude: userCoordinates.latitude,
+        userLongitude: userCoordinates.longitude,
+      }),
+    ).rejects.toBeInstanceOf(Error)
   })
 })

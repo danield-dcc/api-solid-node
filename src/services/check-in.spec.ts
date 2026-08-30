@@ -1,3 +1,4 @@
+import { Decimal } from '@prisma/client/runtime/index-browser'
 import {
   afterEach,
   beforeEach,
@@ -7,15 +8,30 @@ import {
   vi,
 } from 'vitest'
 import { InMemoryCheckInsRepository } from '@/repositories/in-memory/in-memory-check-ins-repository'
+import { InMemoryGymsRepository } from '@/repositories/in-memory/in-memory-gyms-repository'
 import { CheckInService } from './check-in'
 
 let checkInsRepository: InMemoryCheckInsRepository
+let gymsRepository: InMemoryGymsRepository
 let checkInsService: CheckInService
 
 describe('Check-in Service', () => {
   beforeEach(() => {
     checkInsRepository = new InMemoryCheckInsRepository()
-    checkInsService = new CheckInService(checkInsRepository)
+    gymsRepository = new InMemoryGymsRepository()
+    checkInsService = new CheckInService(
+      checkInsRepository,
+      gymsRepository,
+    )
+
+    gymsRepository.items.push({
+      id: 'gym-01',
+      title: 'JavaScript Gym',
+      description: '',
+      latitude: new Decimal(0),
+      longitude: new Decimal(0),
+      phone: '',
+    })
 
     vi.useFakeTimers()
   })
@@ -28,6 +44,8 @@ describe('Check-in Service', () => {
     const { checkIn } = await checkInsService.handle({
       gymId: 'gym-01',
       userId: 'gym-01',
+      userLatitude: -31.7462933,
+      userLongitude: -52.3687164,
     })
 
     expect(checkIn.id).toEqual(expect.any(String))
@@ -39,12 +57,16 @@ describe('Check-in Service', () => {
     await checkInsService.handle({
       gymId: 'gym-01',
       userId: 'gym-01',
+      userLatitude: -31.7462933,
+      userLongitude: -52.3687164,
     })
 
     await expect(() =>
       checkInsService.handle({
         gymId: 'gym-01',
         userId: 'gym-01',
+        userLatitude: -31.7462933,
+        userLongitude: -52.3687164,
       }),
     ).rejects.toBeInstanceOf(Error)
   })
@@ -55,6 +77,8 @@ describe('Check-in Service', () => {
     await checkInsService.handle({
       gymId: 'gym-01',
       userId: 'gym-01',
+      userLatitude: -31.7462933,
+      userLongitude: -52.3687164,
     })
 
     vi.setSystemTime(new Date(2026, 7, 30, 8, 0, 0))
@@ -62,6 +86,8 @@ describe('Check-in Service', () => {
     const { checkIn } = await checkInsService.handle({
       gymId: 'gym-01',
       userId: 'gym-01',
+      userLatitude: -31.7462933,
+      userLongitude: -52.3687164,
     })
 
     expect(checkIn.id).toEqual(expect.any(String))

@@ -45,4 +45,10 @@ export class InMemoryCheckInsRepository
 
     return checkInOnSameDate
   }
+
+  async findManyByUserId(userId: string, page: number) {
+    return this.items
+      .filter((item) => item.user_id === userId)
+      .slice((page - 1) * 20, page * 20) //0-20
+  }
 }

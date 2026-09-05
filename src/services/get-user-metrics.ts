@@ -1,5 +1,4 @@
 import type { CheckInsRepository } from '@/repositories/check-ins-repository'
-import { ResourceNotFoundError } from './errors/resource-not-found-error'
 
 interface GetUserMetricsServiceRequest {
   userId: string

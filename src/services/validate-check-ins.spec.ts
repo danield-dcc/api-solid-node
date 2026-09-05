@@ -1,4 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import dayjs from 'dayjs'
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
 import { InMemoryCheckInsRepository } from '@/repositories/in-memory/in-memory-check-ins-repository'
 import { ResourceNotFoundError } from './errors/resource-not-found-error'
 import { ValidateCheckInService } from './validate-check-ins'
@@ -13,11 +21,11 @@ describe('Validate Check-in Service', () => {
       checkInsRepository,
     )
 
-    // vi.useFakeTimers()
+    vi.useFakeTimers()
   })
 
   afterEach(() => {
-    // vi.useFakeTimers()
+    vi.useFakeTimers()
   })
 
   it('should be able to validate check in', async () => {
@@ -42,5 +50,24 @@ describe('Validate Check-in Service', () => {
         checkInId: 'inexistent-check-in-id',
       }),
     ).rejects.toBeInstanceOf(ResourceNotFoundError)
+  })
+
+  it('should not be able to validate the check-in after 20 minutes of its creation', async () => {
+    vi.setSystemTime(new Date(2026, 8, 5, 13, 40)) //UTC
+
+    const createdCheckIn = await checkInsRepository.create({
+      gym_id: 'gym-01',
+      user_id: 'user_01',
+    })
+
+    const twentyOneMinutesInMs = 1000 * 60 * 21
+
+    vi.advanceTimersByTime(twentyOneMinutesInMs)
+
+    await expect(() =>
+      validateCheckInService.handle({
+        checkInId: createdCheckIn.id,
+      }),
+    ).rejects.toBeInstanceOf(Error)
   })
 })

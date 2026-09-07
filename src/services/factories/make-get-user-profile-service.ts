@@ -1,9 +1,11 @@
-import { PrismaGymsRepository } from '@/repositories/prisma/prisma-gyms-repository'
-import { SearchGymsService } from '../search-gyms'
+import { PrismaUsersRepository } from '@/repositories/prisma/prisma-users.repository'
+import { GetUserProfileService } from '../get-user-profile'
 
-export function makeSearchGymsService() {
-  const gymsRepository = new PrismaGymsRepository()
-  const searchGymsService = new SearchGymsService(gymsRepository)
+export function makeGetUserProfileService() {
+  const userRepository = new PrismaUsersRepository()
+  const getUserProfileService = new GetUserProfileService(
+    userRepository,
+  )
 
-  return searchGymsService
+  return getUserProfileService
 }

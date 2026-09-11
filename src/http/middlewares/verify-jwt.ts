@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 
-export async function VerifyJWT(
+export async function verifyJWT(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {

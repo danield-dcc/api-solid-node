@@ -1,6 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import z from 'zod'
-import { makeCreateGymService } from '@/services/factories/make-create-gym-service'
 import { makeFetchNearbyGymService } from '@/services/factories/make-fetch-nearby-gym-service'
 
 export async function nearby(
@@ -17,7 +16,7 @@ export async function nearby(
   })
 
   const { latitude, longitude } = nearbyGymsQuerySchema.parse(
-    request.body,
+    request.query,
   )
 
   const fetchNearbyGymsService = makeFetchNearbyGymService()

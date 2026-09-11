@@ -1,12 +1,16 @@
-import { prisma } from '@/lib/prisma'
-import 'dotenv/config'
 import { execSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
+import { config } from 'dotenv'
+import { Client } from 'pg'
 import type { Environment } from 'vitest/environments'
+
+config({ path: '.env.test' })
 
 function generateDatabaseURL(schema: string) {
   if (!process.env.DATABASE_URL) {
-    throw new Error('Please provide a DATABASE_URL and variable')
+    throw new Error(
+      'Please provide a DATABASE_URL environment variable',
+    )
   }
 
   const url = new URL(process.env.DATABASE_URL)
@@ -21,21 +25,25 @@ export default (<Environment>{
   viteEnvironment: 'ssr',
   async setup() {
     const schema = randomUUID()
-    const databaseUrl = generateDatabaseURL(schema)
 
-    console.log(databaseUrl)
-
-    process.env.DATABASE_URL = databaseUrl
+    process.env.DATABASE_URL = generateDatabaseURL(schema)
 
     execSync('npx prisma db push')
 
     return {
       async teardown() {
-        await prisma.$executeRawUnsafe(
+        // Cliente pg dedicado e efêmero: não depende do módulo da app
+        // (que pode estar num registro de módulos diferente) e fecha
+        // sozinho, sem segurar o processo.
+        const client = new Client({
+          connectionString: process.env.DATABASE_URL,
+        })
+
+        await client.connect()
+        await client.query(
           `DROP SCHEMA IF EXISTS "${schema}" CASCADE`,
         )
-
-        await prisma.$disconnect()
+        await client.end()
       },
     }
   },

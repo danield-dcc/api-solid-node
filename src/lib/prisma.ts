@@ -21,4 +21,4 @@ const prisma = new PrismaClient({
   log: env.NODE_ENV === 'dev' ? ['query'] : [],
 })
 
-export { prisma }
+export { prisma, schema }
